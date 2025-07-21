@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Panel - IyX Project</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      background: #000;
+      color: #0f0;
+      font-family: 'Courier New', Courier, monospace;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      text-shadow: 0 0 10px #0f0;
+    }
+    .admin-panel {
+      max-width: 600px;
+      margin: 30px auto;
+      background: #011001;
+      padding: 20px;
+      border: 1px solid #0f0;
+      border-radius: 10px;
+      box-shadow: 0 0 15px #0f0;
+    }
+    form label {
+      display: block;
+      margin: 12px 0 5px;
+    }
+    form input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #0f0;
+      background: #000;
+      color: #0f0;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 1rem;
+    }
+    form button {
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      background: #0f0;
+      border: none;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+    form button:hover {
+      background: #5f5;
+    }
+    #msg {
+      margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+    nav {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 30px;
+      background: #011001;
+      color: #0f0;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+      box-shadow: 0 0 10px #0f0;
+      margin-bottom: 20px;
+    }
+    nav .logo {
+      font-size: 1.5rem;
+      letter-spacing: 3px;
+    }
+    nav .menu a {
+      color: #0f0;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav .menu a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo" data-text="IyX-Projct">IyX-Projct</div>
+    <div class="menu">
+      <a href="index.html">Home</a>
+      <a href="shop.html" target="_blank" rel="noopener noreferrer">Shop</a>
+      <a href="login.html">Team Login</a>
+    </div>
+  </nav>
+
+  <main class="admin-panel">
+    <h1>Admin Panel - Add New Product</h1>
+    <form id="productForm">
+      <label for="productName">Product Name:</label>
+      <input type="text" id="productName" required autocomplete="off" />
+
+      <label for="productPrice">Product Price ($):</label>
+      <input type="number" id="productPrice" min="1" required autocomplete="off" />
+
+      <label for="productImage">Product Image URL:</label>
+      <input type="url" id="productImage" required autocomplete="off" />
+
+      <button type="submit">Add Product</button>
+    </form>
+    <p id="msg"></p>
+  </main>
+
+  <script>
+    // چک کردن ورود
+    if (sessionStorage.getItem('loggedIn') !== 'true') {
+      alert("Access denied! Please login first.");
+      window.location.href = 'login.html';
+    }
+
+    // مدیریت محصولات در localStorage
+    let products = JSON.parse(localStorage.getItem('products')) || [];
+
+    const productForm = document.getElementById('productForm');
+    const msg = document.getElementById('msg');
+
+    productForm.addEventListener('submit', e => {
+      e.preventDefault();
+
+      const name = document.getElementById('productName').value.trim();
+      const price = parseFloat(document.getElementById('productPrice').value);
+      const image = document.getElementById('productImage').value.trim();
+
+      if (!name || !price || !image) {
+        msg.style.color = "#f00";
+        msg.textContent = "Please fill in all fields correctly.";
+        return;
+      }
+
+      const newId = products.length ? products[products.length - 1].id + 1 : 1;
+      const newProduct = { id: newId, name, price, image };
+      products.push(newProduct);
+
+      localStorage.setItem('products', JSON.stringify(products));
+
+      productForm.reset();
+
+      msg.style.color = "#0f0";
+      msg.textContent = "Product added successfully!";
+    });
+  </script>
+
+<!-- فرض کنید این فرم در admin.html دارید -->
+<form id="addProductForm">
+  <h2>Add New Product</h2>
+  <label for="productName">Product Name:</label>
+  <input type="text" id="productName" required />
+  
+  <label for="productPrice">Price:</label>
+  <input type="number" id="productPrice" required />
+  
+  <label for="productImage">Image URL:</label>
+  <input type="url" id="productImage" required />
+  
+  <button type="submit">Add Product</button>
+  
+  <p id="addProductMessage"></p>
+</form>
+
+<script>
+  const addProductForm = document.getElementById('addProductForm');
+
+</body>
+</html>
+

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IyX Shop & Admin Panel</title>
+<style>
+  body {
+    background: #000;
+    color: #0f0;
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 0 20px 40px;
+  }
+  h1, h2 {
+    text-align: center;
+    text-shadow: 0 0 10px #0f0;
+  }
+  .shop-container, .admin-panel {
+    max-width: 900px;
+    margin: 20px auto;
+    background: #011001;
+    padding: 15px;
+    border: 1px solid #0f0;
+    border-radius: 8px;
+    box-shadow: 0 0 15px #0f0;
+  }
+<!--
+  جایگزین بخش <section class="products"> با این کد کنید
+-->
+
+<section class="products">
+  <h2>Our Products</h2>
+  <div id="productList" class="product-list"></div>
+</section>
+
+<section class="cart">
+  <h2>Your Cart</h2>
+  <ul id="cartItems"></ul>
+  <p id="cartTotal"></p>
+
+  <h3>Order Details</h3>
+  <form id="orderForm">
+    <label for="discordId">Your Discord ID:</label>
+    <input type="text" id="discordId" name="discordId" placeholder="User#1234" required />
+
+    <label for="username">Your Name:</label>
+    <input type="text" id="username" name="username" placeholder="Your Name" required />
+
+    <button type="submit">Submit Order</button>
+  </form>
+
+  <p id="orderMessage" style="color: red; font-weight: bold;"></p>
+</section>
+
+<script>
+  const productListEl = document.getElementById('productList');
+  const cartItemsEl = document.getElementById('cartItems');
+  const cartTotalEl = document.getElementById('cartTotal');
+  const orderForm = document.getElementById('orderForm');
+  const orderMessage = document.getElementById('orderMessage');
+
+  let products = [];
+  let cart = [];
+
+  // بارگذاری محصولات از سرور
+  async function loadProducts() {
+    try {
+      const res = await fetch('/products');
+      products = await res.json();
+      renderProducts();
+    } catch (e) {
+      productListEl.innerHTML = '<p>Failed to load products.</p>';
+    }
+  }
+
+  // نمایش محصولات
+  function renderProducts() {
+    productListEl.innerHTML = '';
+    products.forEach(p => {
+      const card = document.createElement('div');
+      card.classList.add('product-card');
+      card.innerHTML = `
+        <img src="${p.image}" alt="${p.name}" />
+        <h3>${p.name}</h3>
+        <p>Price: $${p.price}</p>
+        <button onclick="addToCart('${p.id}')">Add to Cart</button>
+      `;
+      productListEl.appendChild(card);
+    });
+  }
+
+  // افزودن به سبد خرید
+  function addToCart(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    const existing = cart.find(c => c.id === productId);
+    if (existing) {
+      existing.qty++;
+    } else {
+      cart.push({ ...product, qty: 1 });
+    }
+    renderCart();
+  }
+
+  // حذف از سبد خرید (اگر خواستید اضافه کنید)
+  function removeFromCart(productId) {
+    cart = cart.filter(c => c.id !== productId);
+    renderCart();
+  }
+
+  // نمایش سبد خرید
+  function renderCart() {
+    cartItemsEl.innerHTML = '';
+    let total = 0;
+    cart.forEach(item => {
+      const li = document.createElement('li');
+      li.textContent = `${item.name} x${item.qty} - $${item.price * item.qty}`;
+      cartItemsEl.appendChild(li);
+      total += item.price * item.qty;
+    });
+    cartTotalEl.textContent = `Total: $${total.toFixed(2)}`;
+  }
+
+  // ارسال سفارش
+  orderForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (cart.length === 0) {
+      orderMessage.style.color = 'red';
+      orderMessage.textContent = 'Your cart is empty!';
+      return;
+    }
+
+    const discordId = document.getElementById('discordId').value.trim();
+    const username = document.getElementById('username').value.trim();
+
+    if (!discordId || !username) {
+      orderMessage.style.color = 'red';
+      orderMessage.textContent = 'Please enter your Discord ID and name.';
+      return;
+    }
+
+    // آماده‌سازی دیتا سفارش
+    const orderCode = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+    const orderData = {
+      code: orderCode,
+      username,
+      discordId,
+      items: cart,
+      date: new Date().toISOString()
+    };
+
+    try {
+      const res = await fetch('/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      const result = await res.json();
+
+      if (result.status === 'success') {
+        orderMessage.style.color = 'green';
+        orderMessage.innerHTML = `
+          Order placed successfully!<br/>
+          Your order code: <strong>${orderCode}</strong><br/>
+          Please send this code in the Discord support ticket.
+        `;
+        cart = [];
+        renderCart();
+        orderForm.reset();
+      } else {
+        orderMessage.style.color = 'red';
+        orderMessage.textContent = 'Failed to place order. Try again later.';
+      }
+    } catch (err) {
+      orderMessage.style.color = 'red';
+      orderMessage.textContent = 'Server error. Please try again later.';
+    }
+  });
+
+  loadProducts();
+</script>
+
+  .product-card {
+    background: #002200;
+    border: 1px solid #0f0;
+    border-radius: 8px;
+    width: 180px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 0 10px #0f0;
+  }
+  .product-card img {
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+    margin-bottom: 10px;
+  }
+  .product-name {
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+  .product-price {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+  .add-btn {
+    background: #0f0;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s;
+    color: #000;
+  }
+  .add-btn:hover {
+    background: #5f5;
+  }
+
+  /* Cart */
+  .cart {
+    margin-top: 40px;
+    background: #002200;
+    border: 1px solid #0f0;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #0f0;
+  }
+  .cart h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+  .cart-items {
+    list-style: none;
+    padding-left: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+  }
+  .cart-items li {
+    padding: 8px 0;
+    border-bottom: 1px solid #0f0;
+    display: flex;
+    justify-content: space-between;
+  }
+  .remove-btn {
+    background: transparent;
+    border: none;
+    color: #f44;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* Order Form */
+  .order-form label {
+    display: block;
+    margin: 10px 0 5px;
+  }
+  .order-form input {
+    width: 100%;
+    padding: 8px;
+    background: #000;
+    border: 1px solid #0f0;
+    border-radius: 5px;
+    color: #0f0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+  }
+  .order-form button {
+    margin-top: 15px;
+    background: #0f0;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    font-weight: 700;
+    color: #000;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s;
+  }
+  .order-form button:hover {
+    background: #5f5;
+  }
+
+  /* Message */
+  .message {
+    margin-top: 15px;
+    font-weight: 700;
+    color: #0f0;
+    text-shadow: 0 0 4px #0f0;
+    text-align: center;
+  }
+  .error {
+    color: #f44;
+    text-shadow: 0 0 4px #f44;
+  }
+
+  /* Admin Panel */
+  .admin-login {
+    max-width: 400px;
+    margin: 40px auto 20px;
+    background: #011001;
+    border: 1px solid #0f0;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px #0f0;
+  }
+  .admin-login input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    background: #000;
+    border: 1px solid #0f0;
+    color: #0f0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+  }
+  .admin-login button {
+    margin-top: 15px;
+    width: 100%;
+    background: #0f0;
+    border: none;
+    color: #000;
+    font-weight: 700;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  .admin-login button:hover {
+    background: #5f5;
+  }
+
+  .admin-panel {
+    display: none;
+  }
+  .admin-panel form {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .admin-panel label {
+    display: block;
+    margin-top: 15px;
+  }
+  .admin-panel input {
+    width: 100%;
+    padding: 8px;
+    background: #000;
+    border: 1px solid #0f0;
+    color: #0f0;
+    border-radius: 5px;
+    font-family: 'Courier New', Courier, monospace;
+  }
+  .admin-panel button {
+    margin-top: 20px;
+    background: #0f0;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    font-weight: 700;
+    cursor: pointer;
+    color: #000;
+    border-radius: 5px;
+    transition: background 0.3s;
+  }
+  .admin-panel button:hover {
+    background: #5f5;
+  }
+</style>
+</head>
+<body>
+
+<h1>IyX Shop & Admin Panel</h1>
+
+<!-- پنل ورود ادمین -->
+<div class="admin-login" id="admin-login">
+  <h2>Admin Panel Login</h2>
+  <input type="password" id="adminCode" placeholder="Enter admin code" />
+  <button onclick="loginAdmin()">Login</button>
+  <div id="loginMessage" class="message"></div>
+</div>
+
+<!-- پنل ادمین -->
+<div class="admin-panel" id="admin-panel">
+  <h2>Add New Product</h2>
+  <form id="addProductForm" onsubmit="return false;">
+    <label for="productName">Product Name:</label>
+    <input type="text" id="productName" required />
+
+    <label for="productPrice">Product Price ($):</label>
+    <input type="number" id="productPrice" min="1" required />
+
+    <label for="productImage">Product Image URL:</label>
+    <input type="url" id="productImage" required />
+
+    <button type="submit" onclick="addNewProduct()">Add Product</button>
+  </form>
+</div>
+
+<!-- فروشگاه -->
+<div class="shop-container">
+  <h2>Shop</h2>
+  <div class="products" id="products"></div>
+
+  <div class="cart" id="cart" style="display:none;">
+    <h3>Your Cart</h3>
+    <ul class="cart-items" id="cart-items"></ul>
+
+    <div class="order-form">
+      <label for="discordId">Discord ID:</label>
+      <input type="text" id="discordId" placeholder="Your Discord ID" />
+      <label for="username">Username:</label>
+      <input type="text" id="username" placeholder="Your Name" />
+      <button id="placeOrder">Place Order</button>
+    </div>
+
+    <div class="message" id="message"></div>
+  </div>
+</div>
+
+<script>
+  let products = [
+    {
+      id: 1,
+      name: "Anti-Cheat MTA",
+      price: 30,
+      image: "https://media.discordapp.net/attachments/1395719399281004544/1396524894015197284/iyx.png?width=200"
+    },
+    {
+      id: 2,
+      name: "MTA Cheat Script",
+      price: 50,
+      image: "https://media.discordapp.net/attachments/1395719399281004544/1396524894015197284/iyx.png?width=200"
+    },
+    {
+      id: 3,
+      name: "Premium Support",
+      price: 20,
+      image: "https://media.discordapp.net/attachments/1395719399281004544/1396524894015197284/iyx.png?width=200"
+    }
+  ];
+
+  const productsContainer = document.getElementById("products");
+  const cartEl = document.getElementById("cart");
+  const cartItemsEl = document.getElementById("cart-items");
+  const discordIdInput = document.getElementById("discordId");
+  const usernameInput = document.getElementById("username");
+  const placeOrderBtn = document.getElementById("placeOrder");
+  const messageEl = document.getElementById("message");
+
+  const adminLoginDiv = document.getElementById("admin-login");
+  const adminPanelDiv = document.getElementById("admin-panel");
+  const loginMessage = document.getElementById("loginMessage");
+
+  let cart = [];
+
+  // رندر محصولات فروشگاه
+  function renderProducts() {
+    productsContainer.innerHTML = "";
+    products.forEach(product => {
+      const card = document.createElement("div");
+      card.className = "product-card";
+      card.innerHTML = `
+        <img src="${product.image}" alt="${product.name}" />
+        <div class="product-name">${product.name}</div>
+        <div class="product-price">$${product.price}</div>
+        <button class="add-btn" data-id="${product.id}">Add to Cart</button>
+      `;
+      productsContainer.appendChild(card);
+    });
+  }
+
+  // رندر سبد خرید
+  function renderCart() {
+    if (cart.length === 0) {
+      cartEl.style.display = "none";
+      return;
+    }
+    cartEl.style.display = "block";
+    cartItemsEl.innerHTML = "";
+    cart.forEach(item => {
+      const li = document.createElement("li");
+      li.textContent = `${item.name} - $${item.price}`;
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "Remove";
+      removeBtn.className = "remove-btn";
+      removeBtn.onclick = () => {
+        removeFromCart(item.id);
+      };
+      li.appendChild(removeBtn);
+      cartItemsEl.appendChild(li);
+    });
+  }
+
+  // اضافه کردن به سبد خرید
+  productsContainer.addEventListener("click", e => {
+    if (e.target.classList.contains("add-btn")) {
+      const id = parseInt(e.target.getAttribute("data-id"));
+      const product = products.find(p => p.id === id);
+      if (product) {
+        cart.push(product);
+        renderCart();
+      }
+    }
+  });
+
+  // حذف از سبد خرید
+  function removeFromCart(id) {
+    cart = cart.filter(item => item.id !== id);
+    renderCart();
+  }
+
+  // ثبت سفارش (فقط دمو، بدون بک‌اند)
+  placeOrderBtn.onclick = () => {
+    const discordId = discordIdInput.value.trim();
+    const username = usernameInput.value.trim();
+    if (!discordId || !username) {
+      messageEl.textContent = "Please enter your Discord ID and Username.";
+      messageEl.classList.add("error");
+      return;
+    }
+    if (cart.length === 0) {
+      messageEl.textContent = "Your cart is empty.";
+      messageEl.classList.add("error");
+      return;
+    }
+    messageEl.textContent = `Order placed! Thank you, ${username}.`;
+    messageEl.classList.remove("error");
+
+    // خالی کردن سبد خرید و فرم
+    cart = [];
+    renderCart();
+    discordIdInput.value = "";
+    usernameInput.value = "";
+  };
+
+  // ورود ادمین ساده با کد
+  function loginAdmin() {
+    const code = document.getElementById("adminCode").value.trim();
+    if (code === "IyX-maifjs19s") {
+      adminLoginDiv.style.display = "none";
+      adminPanelDiv.style.display = "block";
+      loginMessage.textContent = "";
+    } else {
+      loginMessage.textContent = "Invalid admin code!";
+      loginMessage.classList.add("error");
+    }
+  }
+
+  // اضافه کردن محصول جدید از پنل ادمین
+  function addNewProduct() {
+    const name = document.getElementById("productName").value.trim();
+    const price = parseFloat(document.getElementById("productPrice").value);
+    const image = document.getElementById("productImage").value.trim();
+
+    if (!name || !price || !image) {
+      alert("Please fill all product fields.");
+      return;
+    }
+
+    // ساخت آی دی جدید
+    const newId = products.length ? products[products.length - 1].id + 1 : 1;
+    const newProduct = { id: newId, name, price, image };
+    products.push(newProduct);
+
+    // رندر دوباره محصولات
+    renderProducts();
+
+    // خالی کردن فرم
+    document.getElementById("addProductForm").reset();
+
+    alert("Product added successfully!");
+  }
+
+  // اجرای اولیه
+  renderProducts();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #000;
+  font-family: 'Share Tech Mono', monospace;
+  color: #00ff00;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 50px;
+  border-bottom: 1px solid #00ff00;
+  position: sticky;
+  top: 0;
+  background: #000;
+  z-index: 1000;
+}
+
+.logo {
+  font-size: 2.8rem;
+  font-weight: 900;
+  position: relative;
+  color: #00ff00;
+  letter-spacing: 0.15em;
+  user-select: none;
+  cursor: default;
+}
+
+.logo::before,
+.logo::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  overflow: hidden;
+  clip: rect(0, 900px, 0, 0);
+}
+
+.logo::before {
+  left: 2px;
+  text-shadow: -2px 0 red;
+  animation: glitchTop 2s infinite linear alternate-reverse;
+  clip: rect(0, 900px, 45%, 0);
+}
+
+.logo::after {
+  left: -2px;
+  text-shadow: -2px 0 blue;
+  animation: glitchBottom 2s infinite linear alternate-reverse;
+  clip: rect(55%, 900px, 100%, 0);
+}
+
+@keyframes glitchTop {
+  0% {
+    clip: rect(0, 900px, 45%, 0);
+    transform: translate(0);
+  }
+  20% {
+    clip: rect(10px, 900px, 40px, 0);
+    transform: translate(-2px, -2px);
+  }
+  40% {
+    clip: rect(15px, 900px, 50px, 0);
+    transform: translate(2px, 2px);
+  }
+  60% {
+    clip: rect(0, 900px, 45%, 0);
+    transform: translate(0);
+  }
+  80% {
+    clip: rect(10px, 900px, 40px, 0);
+    transform: translate(-1px, 1px);
+  }
+  100% {
+    clip: rect(15px, 900px, 50px, 0);
+    transform: translate(1px, -1px);
+  }
+}
+
+@keyframes glitchBottom {
+  0% {
+    clip: rect(55%, 900px, 100%, 0);
+    transform: translate(0);
+  }
+  20% {
+    clip: rect(60px, 900px, 80px, 0);
+    transform: translate(2px, 2px);
+  }
+  40% {
+    clip: rect(65px, 900px, 85px, 0);
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    clip: rect(55%, 900px, 100%, 0);
+    transform: translate(0);
+  }
+  80% {
+    clip: rect(60px, 900px, 80px, 0);
+    transform: translate(1px, -1px);
+  }
+  100% {
+    clip: rect(65px, 900px, 85px, 0);
+    transform: translate(-1px, 1px);
+  }
+}
+
+.menu a {
+  color: #00ff00;
+  text-decoration: none;
+  margin-left: 30px;
+  font-weight: 700;
+  font-size: 1.3rem;
+  transition: color 0.3s ease;
+}
+
+.menu a:hover {
+  color: #55ff55;
+  text-shadow: 0 0 10px #00ff00;
+}
+
+main {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+section {
+  margin-bottom: 40px;
+}
+
+h1, h2 {
+  letter-spacing: 0.12em;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 15px;
+  color: #00ff00;
+  text-shadow: 0 0 6px #00ff00;
+}
+
+h1 {
+  font-size: 3rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+ul li {
+  margin: 10px 0;
+  padding-left: 15px;
+  position: relative;
+}
+
+ul li::before {
+  content: "•";
+  color: #00ff00;
+  position: absolute;
+  left: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+p {
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: #00ff00;
+  text-shadow: 0 0 3px #008000;
+}
+
+.btn {
+  display: inline-block;
+  background-color: #00ff00;
+  color: #000;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  font-weight: 700;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 15px;
+  text-decoration: none;
+  box-shadow: 0 0 10px #00ff00;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #55ff55;
+}
+
+footer {
+  text-align: center;
+  padding: 20px 0;
+  border-top: 1px solid #00ff00;
+  font-size: 0.9rem;
+  color: #00ff00;
+  text-shadow: 0 0 6px #

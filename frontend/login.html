@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IyX Team Panel Login</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="bg-black text-white flex flex-col items-center justify-center h-screen">
+  <h1 class="text-4xl font-bold mb-4">🔐 Team Panel Login</h1>
+  <form onsubmit="return checkCode()" class="flex flex-col gap-4">
+    <input type="password" id="codeInput" placeholder="Enter Access Code" class="p-2 text-black rounded" autocomplete="off" />
+    <button type="submit" class="bg-purple-700 hover:bg-purple-800 px-4 py-2 rounded text-white">
+      Enter Panel
+    </button>
+    <p id="errorText" class="text-red-500 hidden">❌ Invalid Code</p>
+  </form>
+
+  <script>
+    function checkCode() {
+      const input = document.getElementById('codeInput').value.trim();
+      const error = document.getElementById('errorText');
+      if (input === 'IyX-maifjs19s') {
+        sessionStorage.setItem('loggedIn', 'true');  // ذخیره وضعیت ورود
+        window.location.href = 'admin.html';
+        return false;
+      } else {
+        error.classList.remove('hidden');
+        return false;
+      }
+    }
+  </script>
+</body>
+</html>

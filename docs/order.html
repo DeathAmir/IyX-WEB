@@ -1,0 +1,26 @@
+<form id="orderForm">
+  <input type="text" name="code" placeholder="Order Code" required />
+  <input type="text" name="discordId" placeholder="Discord ID" required />
+  <input type="text" name="username" placeholder="Your Name" required />
+  <button type="submit">Submit Order</button>
+</form>
+
+<script>
+  document.getElementById('orderForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const data = {
+      code: formData.get('code'),
+      discordId: formData.get('discordId'),
+      username: formData.get('username'),
+    };
+
+    fetch('/order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(res => res.json()).then(resData => {
+      alert(resData.message);
+    });
+  });
+</script>

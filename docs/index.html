@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IyX Project - Shop</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <nav>
+    <div class="logo" data-text="IyX-Projct">IyX-Projct</div>
+    <div class="menu">
+      <a href="shop.html" target="_blank" rel="noopener noreferrer">Shop</a>
+      <a href="login.html">Team Login</a>
+      <a href="admin.html">Admin Panel</a>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <h1>Welcome to IyX Project</h1>
+      <p>Your ultimate solution for MTA Anti-Cheat and Cheat tools.</p>
+    </section>
+
+    <section class="about">
+      <h2>About IyX Project</h2>
+      <p>
+        IyX Project is a cutting-edge development in the MTA community providing
+        advanced Anti-Cheat protection alongside powerful cheat tools.  
+        We protect servers from unfair play while offering premium cheats for
+        authorized users.
+      </p>
+    </section>
+
+    <section class="products">
+      <h2>Our Products</h2>
+      <ul>
+        <li>Advanced Anti-Cheat System</li>
+        <li>Cheat Modules for MTA</li>
+        <li>Customizable Cheat Settings</li>
+        <li>Real-time Server Protection</li>
+      </ul>
+    </section>
+
+    <section class="order">
+      <h2>Place Your Order</h2>
+      <form id="orderForm">
+        <label for="product">Select Product:</label>
+        <select id="product" name="product" required>
+          <option value="">-- Choose a product --</option>
+          <option value="Advanced Anti-Cheat System">Advanced Anti-Cheat System</option>
+          <option value="Cheat Modules for MTA">Cheat Modules for MTA</option>
+          <option value="Customizable Cheat Settings">Customizable Cheat Settings</option>
+          <option value="Real-time Server Protection">Real-time Server Protection</option>
+        </select>
+
+        <label for="discordId">Your Discord ID:</label>
+        <input type="text" id="discordId" name="discordId" placeholder="User#1234" required />
+
+        <label for="username">Your Name:</label>
+        <input type="text" id="username" name="username" placeholder="Your Name" required />
+
+        <button type="submit">Submit Order</button>
+      </form>
+
+      <p id="orderMessage" style="color: red; font-weight: bold;"></p>
+    </section>
+
+    <section class="news">
+      <h2>Latest Updates</h2>
+      <ul>
+        <li>Version 2.0 Released - Improved Anti-Cheat Detection!</li>
+        <li>New Cheat Module Added: Stealth Mode</li>
+        <li>Ticket system fully integrated with Discord</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Iy Development. Powered by IyX Project.</p>
+  </footer>
+
+  <script>
+    document.getElementById('orderForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const product = document.getElementById('product').value.trim();
+      const discordId = document.getElementById('discordId').value.trim();
+      const username = document.getElementById('username').value.trim();
+      const messageElem = document.getElementById('orderMessage');
+
+      if (!product || !discordId || !username) {
+        messageElem.style.color = 'red';
+        messageElem.textContent = 'Please fill all fields!';
+        return;
+      }
+
+      // Generate unique order code
+      const orderCode = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+      const orderData = {
+        code: orderCode,
+        product,
+        discordId,
+        username,
+        date: new Date().toISOString()
+      };
+
+      try {
+        const response = await fetch('/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderData)
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          messageElem.style.color = 'green';
+          messageElem.innerHTML = `
+            Order submitted successfully! <br />
+            Your Order Code: <strong>${orderCode}</strong> <br />
+            Please send this code in the Discord support ticket to confirm your order.
+          `;
+
+          this.reset();
+        } else {
+          messageElem.style.color = 'red';
+          messageElem.textContent = 'Error submitting order. Please try again later.';
+        }
+      } catch (err) {
+        messageElem.style.color = 'red';
+        messageElem.textContent = 'Server error. Please try again later.';
+      }
+    });
+  </script>
+
+</body>
+</html>
